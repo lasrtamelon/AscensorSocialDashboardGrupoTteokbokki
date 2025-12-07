@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Movilidad</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-[#f7eefe] text-gray-800">
+
+  <!-- HEADER -->
+  <header class="p-9 text-center">
+    <h1 class="text-5xl font-extrabold text-[#4a355e]">Ascensor social</h1>
+  </header>
+
+  <main class="max-w-7xl mx-auto p-6">
+
+<div class="flex flex-wrap gap-4 mb-6 items-end">
+
+  <div>
+    <label class="text-sm text-slate-600">Filtrar por región</label>
+    <select class="p-2 rounded-xl border shadow bg-white">
+      <option value="all">Todas las regiones</option>
+      <option value="madrid">Madrid</option>
+      <option value="cataluna">Cataluña</option>
+      <option value="pais-vasco">País Vasco</option>
+      <option value="andalucia">Andalucía</option>
+      <option value="navarra">Navarra</option>
+    </select>
+  </div>
+
+  <div>
+    <label class="text-sm text-slate-600">Cohorte (año de nacimiento)</label>
+    <select class="p-2 rounded-xl border shadow bg-white">
+      <option value="1980">1980–1984</option>
+      <option value="1985">1985–1989</option>
+      <option value="1990">1990–1994</option>
+      <option value="1995">1995–1999</option>
+    </select>
+  </div>
+
+</div> 
+
+
+<!-- Datos -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2 mb-10">
+
+  <div class="bg-pink-200 p-4 rounded-2xl shadow">
+    <div class="text-slate-500 text-sm">muestras analizadas</div>
+    <div class="text-3xl font-semibold">1.250.000</div>
+    <div class="text-xs text-slate-600 mt-1">Datos fiscales y censales combinados</div>
+  </div>
+
+  <div class="bg-blue-200 p-4 rounded-2xl shadow">
+    <div class="text-slate-500 text-sm">correlación padres-hijo</div>
+    <div class="text-3xl font-semibold">0.42</div>
+    <div class="text-xs text-slate-600 mt-1">Movilidad moderadamente baja</div>
+  </div>
+
+  <div class="bg-green-200 p-4 rounded-2xl shadow">
+    <div class="text-slate-500 text-sm">prob. ascenso Q1 → Q5</div>
+    <div class="text-3xl font-semibold">8%</div>
+    <div class="text-xs text-slate-600 mt-1">Movilidad de hogares pobres</div>
+  </div>
+
+  <div class="bg-yellow-200 p-4 rounded-2xl shadow">
+    <div class="text-slate-500 text-sm">prob. caída Q5 → Q1–Q2</div>
+    <div class="text-3xl font-semibold">9%</div>
+    <div class="text-xs text-slate-600 mt-1">Riesgo entre hogares de renta alta</div>
+  </div>
+
+</section>
+
+    <!-- GRID DE 2 COLUMNAS -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-10">
+
+      <!-- 1. Curva Movilidad -->
+      <div class="rounded-2xl p-8 shadow-lg bg-white border border-gray-100">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Curva de Movilidad Nacional</h2>
+
+        <div class="bg-pink-50 p-6 rounded-2xl mb-6 shadow-inner">
+          <canvas id="curvaMovilidad"></canvas>
+        </div>
+
+        <!-- leyenda -->
+        <div class="mt-4">
+          <div class="text-sm font-semibold text-gray-700 mb-1"> Intensidad del ascenso social</div>
+          <!-- Barra continua -->
+          <div class="w-full h-4 rounded-full" 
+                style="
+                  background: linear-gradient(
+                    to right,
+                    #2563eb 0%,    /* azul - ascenso bajo */
+                    #4ade80 50%,   /* verde claro - ascenso moderado */
+                    #16a34a 100%   /* verde fuerte - ascenso alto */
+                  );
+                ">
+            </div>
+            <!-- Etiquetas -->
+            <div class="flex justify-between text-xs text-gray-600 mt-2 mb-2">
+              <span>Ascenso bajo</span>
+              <span>Ascenso moderado</span>
+              <span>Ascenso alto</span>
+            </div>
+          </div>
+
+        <!-- Explicacion -->
+        <h2 class="font-bold text-center">¿Hasta qué punto nuestro origen determina nuestro destino?</h2>
+        <div>Representa la relación entre el nivel socioeconómico de los padres y el nivel promedio que alcanzan sus hijos. Si la movilidad fuera perfecta, 
+          la línea sería horizontal: el origen no condicionaría el destino. Cuanto más inclinada es la curva, mayor es la dependencia del origen familiar.</div>
+        <div class="text-center italic">“¿Importa el origen? ¿Cuánto pesa realmente?”</div>
+      </div>
+
+      <!-- 2. Ranking CCAA -->
+      <div class="rounded-2xl p-8 shadow-lg bg-white border border-gray-100">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Ranking de CCAA</h2>
+
+        <div class="bg-blue-50 p-6 rounded-2xl mb-6 shadow-inner">
+          <canvas id="rankingCCAA"></canvas>
+        </div>
+
+        <!-- leyenda-->
+        <div class="mt-4">
+          <div class="text-sm font-semibold text-gray-700 mb-1">Movilidad social por comunidad autónoma</div>
+          <!-- Barra continua -->
+          <div class="w-full h-4 rounded-full"
+              style="
+                background: linear-gradient(
+                  to right,
+                  #dc2626 0%,     /* movilidad baja */
+                  #f97316 25%,    /* movilidad moderada-baja */
+                  #facc15 50%,    /* movilidad moderada */
+                  #8bcb6a 75%,    /* movilidad moderada-alta */
+                  #16a34a 100%    /* movilidad alta */
+                );
+              ">
+          </div>
+            <!-- Etiquetas -->
+          <div class="flex justify-between text-xs text-gray-600 mt-2 mb-2">
+            <span>Movilidad baja</span>
+            <span>Movilidad media</span>
+            <span>Movilidad alta</span>
+          </div>
+        </div>
+
+        <!-- Explicacion -->
+        <h2 class="font-bold text-center">¿Sería tu vida diferente si hubieras nacido en otra comunidad autónoma?</h2>
+        <div> Compara las comunidades autónomas según el nivel medio que alcanzan los hijos de familias pobres (centil 20). Es una medida directa de igualdad de oportunidades
+          territoriales: muestra dónde el ascensor social asciende más, y dónde está atascado.</div>
+        <div class="text-center italic">“¿Dónde naces condiciona tu futuro?”</div>
+      </div>
+
+      <!-- 3. Probabilidad de ascenso -->
+      <div class="rounded-2xl p-8 shadow-lg bg-white border border-gray-100">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Probabilidad de Ascenso</h2>
+
+        <div class="bg-yellow-50 p-6 rounded-2xl mb-6 shadow-inner">
+          <canvas id="upwardMobility"></canvas>
+        </div>
+
+        <!-- Leyenda -->
+        <div class="mt-4">
+          <div class="text-sm font-semibold text-gray-700 mb-1">Probabilidad de ascender a los quintiles altos (Q4–Q5)</div>
+          <!-- Barra continua -->
+          <div class="w-full h-4 rounded-full"
+              style="
+                background: linear-gradient(
+                  to right,
+                  #dc2626 0%,     /* rojo - ascenso muy bajo */
+                  #f97316 25%,    /* naranja - ascenso bajo-moderado */
+                  #facc15 50%,    /* amarillo - ascenso medio */
+                  #86efac 75%,    /* verde claro - ascenso moderado-alto */
+                  #16a34a 100%    /* verde intenso - ascenso alto */
+                );
+              ">
+          </div>
+          <!-- Etiquetas -->
+          <div class="flex justify-between text-xs text-gray-600 mb-3">
+            <span>Ascenso muy bajo</span>
+            <span>Ascenso medio</span>
+            <span>Ascenso alto</span>
+          </div>
+        </div>
+
+        <!-- Explicacion -->
+        <h2 class="font-bold text-center">¿Quién tiene de verdad posibilidades de escalar?</h2>
+        <div> Indica la probabilidad de que los hijos de cada quintil de renta logren llegar a los quintiles altos (Q4–Q5). Es un indicador fundamental de movilidad ascendente: 
+          señala qué grupos sociales tienen más oportunidades reales de escalar posiciones.</div>
+        <div class="text-center italic">“¿Quiénes tienen más opciones de escalar hasta la parte alta de la sociedad?”</div>
+      </div>
+
+      <!-- 4. Probabilidad de caida -->
+      <div class="rounded-2xl p-8 shadow-lg bg-white border border-gray-100">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Probabilidad de Caída</h2>
+
+        <div class="bg-green-50 p-6 rounded-2xl mb-6 shadow-inner">
+          <canvas id="downwardMobility"></canvas>
+        </div>
+
+        <!-- Leyenda -->
+        <div class="mt-4">
+          <div class="text-sm font-semibold text-gray-700 mb-1">Probabilidad de caer a los quintiles bajos (Q1–Q2)</div>
+          <!-- Barra continua -->
+          <div class="w-full h-4 rounded-full"
+              style="
+                background: linear-gradient(
+                  to right,
+                  #16a34a 0%,     /* verde - menor riesgo */
+                  #86efac 25%,    /* verde claro - riesgo moderado-bajo */
+                  #facc15 50%,    /* amarillo - riesgo medio */
+                  #f97316 75%,    /* naranja - riesgo alto */
+                  #dc2626 100%    /* rojo - riesgo muy alto */
+                );
+              ">
+          </div>
+          <!-- Etiquetas -->
+          <div class="flex justify-between text-xs text-gray-600 mb-2">
+            <span>Riesgo bajo</span>
+            <span>Riesgo medio</span>
+            <span>Riesgo alto</span>
+          </div>
+        </div>
+
+
+        <!-- Explicacion -->
+        <h2 class="font-bold text-center">¿Quién está en riesgo de caer aunque haya nacido en una posición alta?</h2>
+        <div>Mide el riesgo de que los hijos terminen en los quintiles bajos (Q1–Q2), según el nivel económico de sus padres. Revela vulnerabilidad social y estabilidad 
+          intergeneracional: un sistema donde las clases medias caen con facilidad es un
+          sistema con alta inseguridad económica.</div>
+        <div class="text-center italic">“¿Quién está más expuesto a perder posición social?”</div>
+      </div>
+
+      <!-- 5. Ascensor social -->
+      <div class="md:col-span-2 rounded-2xl p-8 shadow-lg bg-white border border-gray-100">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Renta esperada (Ascensor social)</h2>
+
+        <div class="bg-red-50 p-6 rounded-2xl mb-6 shadow-inner">
+          <canvas id="rentaEsperada" class="w-full"></canvas>
+        </div>
+
+        <!-- Leyenda -->
+        <div class="mt-4">
+          <div class="text-sm font-semibold text-gray-700 mb-1">FALTA ESTE INDICE</div>
+          <!-- Barra continua -->
+          <div class="w-full h-4 rounded-full mb-2"
+          style="
+            background: linear-gradient(
+              to right,
+              #dc2626 0%,     /* rojo - descenso fuerte */
+              #f97316 25%,    /* naranja - descenso moderado */
+              #facc15 50%,    /* amarillo - estancamiento */
+              #8bcb6a 75%,    /* verde claro - ascenso moderado */
+              #16a34a 100%    /* verde fuerte - ascenso fuerte */
+            );
+          ">
+          </div>
+          <!-- Etiquetas -->
+          <div class="flex justify-between text-xs text-gray-600 mt-2 mb-2">
+            <span>Descenso fuerte</span>
+            <span>Descenso moderado</span>
+            <span>Estancamiento</span>
+            <span>Ascenso moderado</span>
+            <span>Ascenso fuerte</span>
+          </div>
+        </div>
+
+        <!-- Explicacion -->
+        <h2 class="font-bold text-center">¿El ascensor social funciona?</h2>
+        <div>Cada punto representa la renta esperada del hijo, coloreada según su movilidad relativa respecto a sus padres. El color indica si ha ascendido, se ha estancado o 
+          ha descendido en la escala social (Δ centil). Es la medida más completa del
+          funcionamiento real del ascensor social: no solo cuánto se gana, sino cuánto se
+          sube o se baja respecto al origen.</div>
+        <div class="text-center italic">“¿Suben, bajan o se quedan atrapados en el mismo lugar?”</div>
+      </div>
+
+    </section>
+
+  </main>
+
+<script>
+const API = "http://localhost:3033/api";
+
+/* ---------------------------------------------------------
+   1. Curva de Movilidad Nacional
+--------------------------------------------------------- */
+fetch(`${API}/nacional/curva`)
+  .then(r => r.json())
+  .then(data => {
+
+    // Δ movilidad = hijo - padre
+    const deltas = data.map(d => d.centil_hijo - d.centil_padres);
+
+    // Escala cromática azul → verde
+    const colorScale = deltas.map(delta => {
+      // mapear Δ -50...+50 → 0..1 (por si acaso)
+      const normalized = Math.max(0, Math.min(1, (delta + 20) / 40));
+
+      // azul → verde
+      const r = Math.round(0 + normalized * (34 - 0));    // 0 → 34
+      const g = Math.round(99 + normalized * (197 - 99)); // 99 → 197
+      const b = Math.round(255 - normalized * 255);       // 255 → 0
+
+      return `rgb(${r},${g},${b})`;
+    });
+
+    new Chart(document.getElementById("curvaMovilidad"), {
+      type: "line",
+      data: {
+        labels: data.map(d => d.centil_padres),
+        datasets: [{
+          label: "Centil esperado del hijo",
+          data: data.map(d => d.centil_hijo),
+          borderColor: "#0055ff",
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: colorScale, // 🔥 cada punto coloreado
+          tension: 0.2
+        }]
+      },
+      options: {
+        plugins: {
+        tooltip: {
+          callbacks: {
+            title: (items) => {
+              const centilPadres = items[0].label;
+              return `Origen familiar: centil ${centilPadres}`;
+            },
+
+            label: (item) => {
+              const hijos = item.raw.toFixed(1);
+              return `Nivel esperado del hijo: centil ${hijos}`;
+            },
+
+            afterLabel: (item) => {
+              const i = item.dataIndex;
+              const delta = deltas[i];
+              const deltaFmt = delta.toFixed(1);
+
+              let interpretacion = "";
+
+              if (delta > 10) {
+                interpretacion = "Movilidad ascendente muy alta.";
+              } else if (delta > 5) {
+                interpretacion = "Buen ascenso respecto al origen.";
+              } else if (delta > 2) {
+                interpretacion = "Ascenso moderado.";
+              } else if (delta >= 0) {
+                interpretacion = "Prácticamente estancamiento.";
+              } else if (delta > -3) {
+                interpretacion = "Ligero retroceso.";
+              } else {
+                interpretacion = "Retroceso fuerte respecto al origen.";
+              }
+
+              return [
+                `Ascensor social: ${deltaFmt}`,
+                interpretacion
+              ];
+            }
+          },
+          backgroundColor: "rgba(0,0,0,0.85)",
+          titleFont: { size: 14, weight: "bold" },
+          bodyFont: { size: 13 },
+          padding: 10,
+          cornerRadius: 6
+        }
+        }
+      }
+    });
+  });
+
+/* ---------------------------------------------------------
+   2. Ranking CCAA
+--------------------------------------------------------- */
+fetch(`${API}/ccaa/ranking`)
+  .then(r => r.json())
+  .then(data => {
+
+    const labels = data.map(d => d.ccaa);
+    const valores = data.map(d => d.centil_hijo);
+
+    // Escala cromática rojo → amarillo → verde basada en desempeño
+    const min = Math.min(...valores);
+    const max = Math.max(...valores);
+
+    const colorScale = valores.map(v => {
+      const t = (v - min) / (max - min); // normalización 0–1
+
+      // rojo (#dc2626) → amarillo (#facc15) → verde (#16a34a)
+      let r, g, b;
+
+      if (t < 0.5) {
+        // rojo → amarillo
+        const k = t * 2;
+        r = 220;
+        g = Math.round(38 + k * (204 - 38)); 
+        b = 38;
+      } else {
+        // amarillo → verde
+        const k = (t - 0.5) * 2;
+        r = Math.round(250 - k * (234 - 22));
+        g = Math.round(204 + k * (163 - 204));
+        b = Math.round(21 + k * (74 - 21));
+      }
+
+      return `rgb(${r},${g},${b})`;
+    });
+
+    new Chart(document.getElementById("rankingCCAA"), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Centil alcanzado por los hijos",
+          data: valores,
+          backgroundColor: colorScale // <<--- COLORES DINÁMICOS
+        }]
+      },
+      options: {
+        indexAxis: "y", // barras horizontales
+        plugins: {
+          tooltip: {
+            callbacks: {
+              title: (items) => {
+                const idx = items[0].dataIndex;
+                return labels[idx];
+              },
+              label: (item) => {
+                const centil = valores[item.dataIndex].toFixed(1);
+                return `Centil medio alcanzado: ${centil}`;
+              },
+              afterLabel: (item) => {
+                const ccaa = labels[item.dataIndex];
+                const centil = valores[item.dataIndex].toFixed(1);
+
+                return (
+                  `Esto significa que, en ${ccaa}, los hijos de\n` +
+                  `familias situadas en el centil 20 alcanzan\n` +
+                  `de media el centil ${centil}.`
+                );
+              }
+            },
+            backgroundColor: "rgba(0,0,0,0.85)",
+            titleFont: { size: 14, weight: "bold" },
+            bodyFont: { size: 13 }
+          }
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: "Centil medio alcanzado por los hijos",
+              font: { size: 14 }
+            }
+          }
+        }
+      }
+    });
+  });
+
+/* ---------------------------------------------------------
+   3. Probabilidad de ascenso
+--------------------------------------------------------- */
+fetch(`${API}/quintiles/nacional`)
+  .then(r => r.json())
+  .then(data => {
+
+    // Limpieza y cálculo de probabilidad de ascenso
+    const cleanData = data.map((d, i) => ({
+      quintil: i + 1,
+      ascenso: d.rango_60_80 + d.rango_80_100
+    }));
+
+    const labels = cleanData.map(d => "Q" + d.quintil);
+    const valores = cleanData.map(d => d.ascenso);
+
+    // Paleta de verdes dinámica para ascenso
+    const colores = [
+      "#16a34a", // Q1
+      "#22c55e", // Q2
+      "#4ade80", // Q3
+      "#86efac", // Q4
+      "#d9f99d"  // Q5
+    ];
+
+    new Chart(document.getElementById("upwardMobility"), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Probabilidad de ascender a Q4–Q5 (%)",
+          data: valores,
+          backgroundColor: colores
+        }]
+      },
+      options: {
+        plugins: {
+          tooltip: {
+            callbacks: {
+              title: (items) => {
+                const i = items[0].dataIndex;
+                return `Quintil de origen: ${labels[i]}`;
+              },
+              label: (item) => {
+                const pct = valores[item.dataIndex].toFixed(1);
+                return `Probabilidad de ascenso: ${pct}%`;
+              },
+              afterLabel: (item) => {
+                const idx = item.dataIndex;
+                const pct = valores[idx].toFixed(1);
+
+                return (
+                  `El ${pct}% de los hijos nacidos en ${labels[idx]}\n` +
+                  `logran llegar a los quintiles altos (Q4–Q5),\n` +
+                  `lo que refleja movilidad social ascendente.`
+                );
+              }
+            },
+            backgroundColor: "rgba(0,0,0,0.85)",
+            titleFont: { size: 14, weight: "bold" },
+            bodyFont: { size: 13 }
+          }
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: "Quintil de renta de los padres",
+              font: { size: 14 }
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: "Probabilidad de ascender (%)",
+              font: { size: 14 }
+            }
+          }
+        }
+      }
+    });
+  });
+
+/* ---------------------------------------------------------
+   4. Probabilidad de Caída 
+--------------------------------------------------------- */
+fetch(`${API}/quintiles/nacional`)
+  .then(r => r.json())
+  .then(data => {
+
+    const cleanData = data.map((d, i) => ({
+      quintil: i + 1,
+      caida: d.rango_0_20 + d.rango_20_40
+    }));
+
+    const labels = cleanData.map(d => "Q" + d.quintil);
+    const valores = cleanData.map(d => d.caida);
+
+    // Paleta dinámica por quintil (Q1 → rojo, Q5 → amarillo)
+    const colores = [
+      "#b91c1c", // Q1
+      "#dc2626", // Q2
+      "#f97316", // Q3
+      "#fbbf24", // Q4
+      "#fde047"  // Q5
+    ];
+
+    new Chart(document.getElementById("downwardMobility"), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Probabilidad de caer a Q1–Q2 (%)",
+          data: valores,
+          backgroundColor: colores
+        }]
+      },
+      options: {
+        plugins: {
+          tooltip: {
+            callbacks: {
+              title: (items) => {
+                const i = items[0].dataIndex;
+                return `Quintil de origen: ${labels[i]}`;
+              },
+              label: (item) => {
+                const pct = valores[item.dataIndex].toFixed(1);
+                return `Probabilidad de caída: ${pct}%`;
+              },
+              afterLabel: (item) => {
+                const idx = item.dataIndex;
+                const pct = valores[idx].toFixed(1);
+
+                return (
+                  `El ${pct}% de los hijos nacidos en ${labels[idx]}\n` +
+                  `terminan en los quintiles bajos (Q1–Q2), es decir,\n` +
+                  `sufren movilidad descendente.`
+                );
+              }
+            },
+            backgroundColor: "rgba(0,0,0,0.85)",
+            titleFont: { size: 14, weight: "bold" },
+            bodyFont: { size: 13 }
+          }
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: "Quintil de renta de los padres",
+              font: { size: 14 }
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: "Probabilidad de caer (%)",
+              font: { size: 14 }
+            }
+          }
+        }
+      }
+    });
+  });
+
+/* ---------------------------------------------------------
+   5. Renta esperada – Colores dinámicos según ascensor social (Δ centil)
+--------------------------------------------------------- */
+Promise.all([
+  fetch(`${API}/nacional/curva`).then(r => r.json()),
+  fetch(`${API}/conversor/hijos`).then(r => r.json())
+]).then(([curva, hijosEuros]) => {
+
+  // Calcular renta esperada real en euros
+  const rentaEsperada = curva.map(d => {
+    const centilHijo = Math.round(d.centil_hijo);
+    const registro = hijosEuros.find(h => h.centil === centilHijo);
+    return registro ? registro.renta : null;
+  });
+
+  // Calcular Δ centil
+  const delta = curva.map(d => d.centil_hijo - d.centil_padres);
+
+  // Función de color dinámico según Δ
+  const colorDelta = delta.map(d => {
+    if (d > 10) return "#16a34a";     // ascenso fuerte
+    if (d > 0) return "#8bcb6a";      // ascenso moderado
+    if (d === 0) return "#facc15";    // estancamiento
+    if (d > -10) return "#f97316";    // descenso moderado
+    return "#dc2626";                 // descenso fuerte
+  });
+
+  // Crear puntos con color individual
+  const puntos = rentaEsperada.map((y, i) => ({
+    x: curva[i].centil_padres,
+    y,
+    backgroundColor: colorDelta[i]
+  }));
+
+  new Chart(document.getElementById("rentaEsperada"), {
+    type: "scatter",
+    data: {
+      datasets: [{
+        label: "Renta esperada (€)",
+        data: puntos,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        backgroundColor: puntos.map(p => p.backgroundColor)
+      }]
+    },
+    options: {
+      plugins: {
+        tooltip: {
+          callbacks: {
+            title: (items) => {
+              const i = items[0].dataIndex;
+              return `Padres en centil ${curva[i].centil_padres}`;
+            },
+            label: (item) => {
+              const i = item.dataIndex;
+              const renta = rentaEsperada[i].toLocaleString("es-ES");
+              return `Renta esperada del hijo: ${renta} €`;
+            },
+            afterLabel: (item) => {
+              const i = item.dataIndex;
+              const d = delta[i].toFixed(1);
+              if (d > 0)
+                return `Ascenso social: +${d} centiles`;
+              if (d < 0)
+                return `Descenso social: ${d} centiles`;
+              return `Sin movilidad social (Δ = 0)`;
+            }
+          },
+          backgroundColor: "rgba(0,0,0,0.85)"
+        }
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: "Centil de renta de los padres",
+            font: { size: 14 }
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: "Renta esperada (€)",
+            font: { size: 14 }
+          }
+        }
+      }
+    }
+  });
+});
+</script>
+
+</body>
+</html>

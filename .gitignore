@@ -1,0 +1,4 @@
+# Node modules
+node_modules/
+app/node_modules/
+server/node_modules/
